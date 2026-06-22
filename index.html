@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Print Sales Manager - Gestão de Vendas de Impressão 3D</title>
+    
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <!-- Tela de Login com Google -->
+    <div id="login-screen" class="login-overlay">
+        <div class="login-card">
+            <div class="login-logo">3D</div>
+            <h2>Gestão 3D Print</h2>
+            <p>Acesse sua conta do Google para gerenciar de forma segura seus produtos, custos de produção e metas de vendas na nuvem.</p>
+            <button id="btn-google-login" class="btn-google">
+                <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg" style="margin-right:10px;">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+                Entrar com o Google
+            </button>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation (Desktop) -->
+        <aside class="sidebar">
+            <div>
+                <div class="sidebar-header">
+                    <div class="sidebar-logo">3D</div>
+                    <span class="sidebar-title">Gestão 3D Print</span>
+                </div>
+                <nav>
+                    <ul class="nav-menu">
+                        <li>
+                            <a class="nav-item active" data-tab="dashboard">
+                                <i class="lucide-layout-dashboard"></i> Painel de Métricas
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-item" data-tab="consultor">
+                                <i class="lucide-bot"></i> Consultor de Peças
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-item" data-tab="seo">
+                                <i class="lucide-search"></i> Otimizador SEO
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-item" data-tab="calculadora">
+                                <i class="lucide-calculator"></i> Calculadora de Preço
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-item" data-tab="produtos">
+                                <i class="lucide-shopping-bag"></i> Estoque & Vendas
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-item" data-tab="configuracoes">
+                                <i class="lucide-settings"></i> Configurações
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            
+            <div class="sidebar-footer">
+                <!-- Painel de Perfil de Usuário Logado -->
+                <div id="user-profile-sidebar" class="user-profile-box" style="display: none;">
+                    <img id="user-avatar" src="" alt="Avatar" class="user-avatar-img">
+                    <div class="user-meta">
+                        <span id="user-name" class="user-profile-name">Carregando...</span>
+                        <button id="btn-logout" class="btn-logout-link"><i class="lucide-log-out"></i> Sair</button>
+                    </div>
+                </div>
+                <button id="theme-toggle" class="theme-toggle-btn">
+                    <i class="lucide-moon"></i> Mudar para Claro
+                </button>
+                <div id="db-status-badge" class="db-status local">
+                    <i class="lucide-database"></i> LocalStorage (Offline)
+                </div>
+            </div>
+        </aside>
+
+        <!-- Mobile Navigation (Bottom Bar) -->
+        <div class="mobile-nav">
+            <a class="mobile-nav-item active" data-tab="dashboard">
+                <i class="lucide-layout-dashboard"></i>
+                Painel
+            </a>
+            <a class="mobile-nav-item" data-tab="consultor">
+                <i class="lucide-bot"></i>
+                Consultor
+            </a>
+            <a class="mobile-nav-item" data-tab="seo">
+                <i class="lucide-search"></i>
+                SEO
+            </a>
+            <a class="mobile-nav-item" data-tab="calculadora">
+                <i class="lucide-calculator"></i>
+                Preço
+            </a>
+            <a class="mobile-nav-item" data-tab="produtos">
+                <i class="lucide-shopping-bag"></i>
+                Vendas
+            </a>
+            <a class="mobile-nav-item" data-tab="configuracoes">
+                <i class="lucide-settings"></i>
+                Config
+            </a>
+        </div>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <h2 class="page-title" id="page-title-text">Painel de Métricas</h2>
+                <div style="display:flex; align-items:center; gap: 15px;">
+                    <!-- Mobile only connection badge -->
+                    <span class="db-status-mobile"></span>
+                </div>
+            </header>
+
+            <!-- Scrollable Content Body -->
+            <div class="content-body">
+
+                <!-- TAB: DASHBOARD -->
+                <div class="tab-pane active" id="dashboard">
+                    <!-- Cards Grid -->
+                    <div class="dashboard-grid">
+                        <!-- Card 1: Revenue -->
+                        <div class="stat-card blue">
+                            <div class="stat-info">
+                                <span class="stat-label">Receita no Mês</span>
+                                <span class="stat-value" id="dash-revenue">R$ 0,00</span>
+                            </div>
+                            <div class="stat-icon">
+                                <i class="lucide-trending-up"></i>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Profit -->
+                        <div class="stat-card green">
+                            <div class="stat-info">
+                                <span class="stat-label">Lucro Líquido</span>
+                                <span class="stat-value" id="dash-profit">R$ 0,00</span>
+                            </div>
+                            <div class="stat-icon">
+                                <i class="lucide-dollar-sign"></i>
+                            </div>
+                        </div>
+
+                        <!-- Card 3: Products Count -->
+                        <div class="stat-card cyan">
+                            <div class="stat-info">
+                                <span class="stat-label">Produtos Precificados</span>
+                                <span class="stat-value" id="dash-products-count">0</span>
+                            </div>
+                            <div class="stat-icon">
+                                <i class="lucide-package"></i>
+                            </div>
+                        </div>
+
+                        <!-- Card 4: Sales Goal -->
+                        <div class="stat-card orange">
+                            <div class="stat-info" style="width: 75%;">
+                                <span class="stat-label">Meta Faturamento Mês</span>
+                                <div class="goal-progress-container">
+                                    <div class="progress-bar-bg">
+                                        <div class="progress-bar-fill" id="dash-goal-fill"></div>
+                                    </div>
+                                    <div class="goal-header">
+                                        <span>Meta: <strong id="dash-goal-text">R$ 1.500,00</strong></span>
+                                        <span id="dash-goal-pct">0%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="stat-icon">
+                                <i class="lucide-target"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart Container -->
+                    <div class="dashboard-details full-width">
+                        <div class="panel-card">
+                            <div class="panel-header">
+                                <h3 class="panel-title">Evolução do Faturamento e Lucro</h3>
+                                <span class="stat-label">Últimos meses</span>
+                            </div>
+                            <div style="height: 320px; position: relative;">
+                                <canvas id="salesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: CONSULTOR -->
+                <div class="tab-pane" id="consultor">
+                    <!-- Agent Greeting Banner -->
+                    <div class="agent-banner">
+                        <div class="agent-avatar">🤖</div>
+                        <div class="agent-greeting">
+                            <h3>Consultor de Vendas & Demanda</h3>
+                            <p id="consultant-comment">Carregando sugestões do agente...</p>
+                        </div>
+                    </div>
+
+                    <!-- Category Filters -->
+                    <div class="form-label" style="margin-bottom: 8px;">Categorias de Interesse</div>
+                    <div class="consultant-filters" id="consultant-cats">
+                        <span class="filter-chip active" data-cat="all">Todos</span>
+                        <span class="filter-chip" data-cat="Brinquedos">Brinquedos Articulados</span>
+                        <span class="filter-chip" data-cat="Games">Setup Gamer</span>
+                        <span class="filter-chip" data-cat="Decoração">Decoração Modernista</span>
+                        <span class="filter-chip" data-cat="Utilidades">Utilidades do Lar</span>
+                    </div>
+
+                    <!-- Strategy Filters -->
+                    <div class="form-label" style="margin-bottom: 8px;">Meta Comercial</div>
+                    <div class="consultant-filters" id="consultant-goals">
+                        <span class="filter-chip active" data-goal="all">Tudo do Acervo</span>
+                        <span class="filter-chip" data-goal="fast">⚡ Produção Super Rápida (&lt; 2.5h)</span>
+                        <span class="filter-chip" data-goal="high-profit">💰 Foco em Alta Margem de Lucro</span>
+                        <span class="filter-chip" data-goal="bambu-special">🐼 Recomendações Especiais Bambu A1</span>
+                    </div>
+
+                    <!-- Suggested Products Grid -->
+                    <h3 class="panel-title" style="margin: 24px 0 16px 0;">Produtos Recomendados para Venda</h3>
+                    <div class="products-grid" id="consultant-products-container">
+                        <!-- Dynamic list from consultant-agent.js -->
+                    </div>
+                </div>
+
+                <!-- TAB: SEO OPTIMIZER -->
+                <div class="tab-pane" id="seo">
+                    <div class="agent-banner">
+                        <div class="agent-avatar">🔍</div>
+                        <div class="agent-greeting">
+                            <h3>Agente Otimizador SEO Automático</h3>
+                            <p>Gere títulos magnéticos e descrições com alta conversão para o Mercado Livre e Shopee de forma instantânea.</p>
+                        </div>
+                    </div>
+
+                    <div class="seo-workspace">
+                        <!-- Parameters input -->
+                        <div class="panel-card">
+                            <h3 class="panel-title" style="margin-bottom: 16px;">Dados da Peça</h3>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="seo-base-name">Nome Base do Produto</label>
+                                <input type="text" id="seo-base-name" class="form-control" placeholder="Ex: Dragao Articulado de Cristal">
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label" for="seo-material">Filamento Utilizado</label>
+                                    <select id="seo-material" class="form-control form-select">
+                                        <option value="PLA">PLA (Estético/Detalhado)</option>
+                                        <option value="PETG">PETG (Resistente/Funcional)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="seo-color">Cor ou Acabamento</label>
+                                    <input type="text" id="seo-color" class="form-control" placeholder="Ex: Silk Azul, Arco-íris, Preto Fosco">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="seo-highlights">Destaques / Apelo de Busca (Separados por vírgula)</label>
+                                <input type="text" id="seo-highlights" class="form-control" placeholder="Ex: Brinquedo Fidget, Suporte Mesa, Anti Stress">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="seo-extra-info">Informações Extras para Detalhar na Descrição (Opcional)</label>
+                                <textarea id="seo-extra-info" class="form-control" rows="3" placeholder="Ex: Dimensões de 25cm de comprimento, acompanha suporte de brinde, articulável..."></textarea>
+                            </div>
+
+                            <button id="btn-generate-seo" class="btn btn-primary" style="width: 100%; margin-top: 8px;">
+                                <i class="lucide-sparkles"></i> Gerar SEO Otimizado
+                            </button>
+                        </div>
+
+                        <!-- Results View -->
+                        <div class="seo-result-panel" id="seo-results-wrapper" style="display: none;">
+                            <!-- Mercado Livre Card -->
+                            <div class="seo-result-card">
+                                <div class="seo-result-header">
+                                    <span class="platform-badge ml">Mercado Livre</span>
+                                    <button id="btn-copy-ml-title" class="btn btn-outline" style="padding: 4px 8px; font-size: 0.75rem;">
+                                        <i class="lucide-copy"></i> Copiar Título
+                                    </button>
+                                </div>
+                                <div class="seo-title-preview" id="seo-ml-title">...</div>
+                                <span class="char-counter" id="seo-ml-count">0/60 carac.</span>
+                            </div>
+
+                            <!-- Shopee Card -->
+                            <div class="seo-result-card">
+                                <div class="seo-result-header">
+                                    <span class="platform-badge shopee">Shopee</span>
+                                    <button id="btn-copy-shopee-title" class="btn btn-outline" style="padding: 4px 8px; font-size: 0.75rem;">
+                                        <i class="lucide-copy"></i> Copiar Título
+                                    </button>
+                                </div>
+                                <div class="seo-title-preview" id="seo-shopee-title">...</div>
+                                <span class="char-counter" id="seo-shopee-count">0/60 carac.</span>
+                            </div>
+
+                            <!-- Category and tags -->
+                            <div class="seo-result-card">
+                                <h4 class="form-label" style="margin-bottom: 8px;">Categorização & Tags Recomendadas</h4>
+                                <div style="font-size: 0.85rem; margin-bottom: 8px;">
+                                    <strong>Mercado Livre:</strong> <span id="seo-ml-cat" class="text-muted">...</span><br>
+                                    <strong>Shopee:</strong> <span id="seo-shopee-cat" class="text-muted">...</span>
+                                </div>
+                                <div class="tags-container" id="seo-tags-container">
+                                    <!-- Dynamic hashtags list -->
+                                </div>
+                            </div>
+
+                            <!-- Description Box -->
+                            <div class="seo-result-card" style="display: flex; flex-direction: column; gap: 8px;">
+                                <div class="seo-result-header">
+                                    <span class="form-label">Descrição Magnética Completa</span>
+                                    <button id="btn-copy-desc" class="btn btn-outline" style="padding: 4px 8px; font-size: 0.75rem;">
+                                        <i class="lucide-copy"></i> Copiar Descrição
+                                    </button>
+                                </div>
+                                <div class="seo-description-preview" id="seo-desc">...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: CALCULADORA -->
+                <div class="tab-pane" id="calculadora">
+                    <div class="agent-banner">
+                        <div class="agent-avatar">💰</div>
+                        <div class="agent-greeting">
+                            <h3>Calculadora Precificadora 3D</h3>
+                            <p>Calcule os custos exatos de filamento, energia elétrica e amortização de máquina de forma ágil, comparando com o mercado brasileiro.</p>
+                        </div>
+                    </div>
+
+                    <div class="calc-layout">
+                        <!-- Inputs Panel -->
+                        <div class="panel-card">
+                            <h3 class="panel-title" style="margin-bottom: 16px;">Parâmetros da Peça</h3>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label" for="calc-spool-cost">Preço Rolo Filamento (R$)</label>
+                                    <input type="number" id="calc-spool-cost" class="form-control" value="120.00" step="0.01">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="calc-spool-weight">Peso do Rolo (g)</label>
+                                    <input type="number" id="calc-spool-weight" class="form-control" value="1000">
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label" for="calc-weight">Peso da Peça Faturada (g)</label>
+                                    <input type="number" id="calc-weight" class="form-control" value="150">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Tempo Total de Impressão</label>
+                                    <div style="display:flex; gap: 8px;">
+                                        <input type="number" id="calc-time-h" class="form-control" value="3" placeholder="Horas">
+                                        <input type="number" id="calc-time-m" class="form-control" value="30" placeholder="Minutos" max="59">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h3 class="panel-title" style="margin: 16px 0 12px 0; font-size: 0.95rem; border-top: 1px solid var(--card-border); padding-top: 16px;">Configurações Adicionais (Bambu Lab A1 Padrão)</h3>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label" for="calc-energy-consumption">Consumo Impressora (kW)</label>
+                                    <input type="number" id="calc-energy-consumption" class="form-control" value="0.10" step="0.01" title="Consumo médio da A1 é 100W (0.1 kW)">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="calc-energy-tariff">Tarifa de Luz (R$/kWh)</label>
+                                    <input type="number" id="calc-energy-tariff" class="form-control" value="0.80" step="0.01" title="Tarifa média nacional">
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label" for="calc-depreciation">Depreciação Máquina (R$/h)</label>
+                                    <input type="number" id="calc-depreciation" class="form-control" value="1.50" step="0.01" title="Taxa horária para amortizar desgaste e bico">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="calc-extras">Embalagem & Outros Custos (R$)</label>
+                                    <input type="number" id="calc-extras" class="form-control" value="3.00" step="0.01" title="Caixa, fita, plástico bolha, cola, etc">
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label" for="calc-category">Categoria do Item</label>
+                                    <select id="calc-category" class="form-control form-select">
+                                        <option value="Brinquedos">Brinquedos Articulados</option>
+                                        <option value="Games">Games / Setup</option>
+                                        <option value="Decoração">Decoração</option>
+                                        <option value="Utilidades">Utilidades</option>
+                                        <option value="Outros">Outros</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="calc-filament-type">Tipo de Filamento</label>
+                                    <select id="calc-filament-type" class="form-control form-select">
+                                        <option value="PLA">PLA</option>
+                                        <option value="PETG">PETG</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Results & Suggestions Panel -->
+                        <div class="calc-summary-panel">
+                            <div>
+                                <h3 class="panel-title" style="margin-bottom: 12px;">Composição de Custos</h3>
+                                <div class="calc-cost-breakdown">
+                                    <div class="cost-breakdown-item">
+                                        <span class="metric-label">Filamento Consumido:</span>
+                                        <span id="cost-breakdown-filament">R$ 0,00</span>
+                                    </div>
+                                    <div class="cost-breakdown-item">
+                                        <span class="metric-label">Energia Elétrica:</span>
+                                        <span id="cost-breakdown-energy">R$ 0,00</span>
+                                    </div>
+                                    <div class="cost-breakdown-item">
+                                        <span class="metric-label">Desgaste da Impressora:</span>
+                                        <span id="cost-breakdown-depreciation">R$ 0,00</span>
+                                    </div>
+                                    <div class="cost-breakdown-item">
+                                        <span class="metric-label">Custos de Envio/Extras:</span>
+                                        <span id="cost-breakdown-extras">R$ 0,00</span>
+                                    </div>
+                                    <div class="cost-total-row">
+                                        <span>CUSTO PRODUÇÃO:</span>
+                                        <span id="cost-breakdown-total">R$ 0,00</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Suggestions (40% to 60%) -->
+                            <div>
+                                <h3 class="panel-title" style="margin-bottom: 12px; font-size: 0.9rem;">Sugestão Comercial (Margem de 40% a 60%)</h3>
+                                <div class="margin-options">
+                                    <div class="margin-card" id="card-sug-40">
+                                        <span class="margin-pct">40%</span>
+                                        <div class="margin-price" id="sug-price-40">R$ 0,00</div>
+                                        <span class="margin-profit" id="sug-profit-40">Lucro: R$ 0,00</span>
+                                    </div>
+                                    <div class="margin-card active" id="card-sug-50">
+                                        <span class="margin-pct">50%</span>
+                                        <div class="margin-price" id="sug-price-50">R$ 0,00</div>
+                                        <span class="margin-profit" id="sug-profit-50">Lucro: R$ 0,00</span>
+                                    </div>
+                                    <div class="margin-card" id="card-sug-60">
+                                        <span class="margin-pct">60%</span>
+                                        <div class="margin-price" id="sug-price-60">R$ 0,00</div>
+                                        <span class="margin-profit" id="sug-profit-60">Lucro: R$ 0,00</span>
+                                    </div>
+                                </div>
+                                <span class="char-counter" style="text-align: left; margin-top: 6px;">Clique em um dos cartões acima para selecionar a margem desejada.</span>
+                            </div>
+
+                            <!-- Custom Margin Selector -->
+                            <div class="custom-margin-slider">
+                                <div style="display:flex; justify-content:space-between; margin-bottom: 6px;">
+                                    <span class="form-label">Ajuste Fino de Margem</span>
+                                    <strong id="calc-margin-slider-value" style="color:var(--primary);">50%</strong>
+                                </div>
+                                <input type="range" id="calc-margin-slider" min="30" max="80" value="50" style="width:100%; cursor: pointer;">
+                            </div>
+
+                            <!-- Final suggested values and comparison -->
+                            <div style="border-top:1px solid var(--card-border); padding-top: 16px;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+                                    <div>
+                                        <span class="stat-label">Preço Sugerido Final</span>
+                                        <div class="stat-value" id="calc-selling-price-out" style="color:var(--primary); font-size:2.1rem;">R$ 0,00</div>
+                                    </div>
+                                    <div style="text-align:right;">
+                                        <span class="stat-label">Lucro Líquido Real</span>
+                                        <div class="stat-value" id="calc-profit-out" style="color:var(--success); font-size:1.4rem;">+R$ 0,00</div>
+                                    </div>
+                                </div>
+
+                                <!-- Market comparison indicator -->
+                                <div class="market-comp-box">
+                                    <div class="comp-header">
+                                        <span>Status Competitivo:</span>
+                                        <span class="comp-status equal" id="calc-comp-status">Competitivo</span>
+                                    </div>
+                                    <p id="calc-comp-message" style="font-size:0.8rem; line-height:1.4; color:var(--text-muted);">...</p>
+                                    <span id="calc-comp-range" style="font-size:0.75rem; font-weight:600; color:var(--text-main);">...</span>
+                                </div>
+                            </div>
+
+                            <!-- Add to Stock Form -->
+                            <div style="border-top: 1px solid var(--card-border); padding-top: 16px; display:flex; flex-direction:column; gap:10px;">
+                                <label class="form-label" for="calc-product-name">Nome do Produto para o Inventário</label>
+                                <div style="display:flex; gap: 8px;">
+                                    <input type="text" id="calc-product-name" class="form-control" placeholder="Ex: Dragão de Cristal Vermelho">
+                                    <button id="btn-save-calc-product" class="btn btn-success" style="white-space: nowrap;">
+                                        <i class="lucide-plus"></i> Cadastrar Peça
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: ESTOQUE E VENDAS -->
+                <div class="tab-pane" id="produtos">
+                    <!-- Register Sale Section -->
+                    <div class="panel-card" style="margin-bottom: 24px;">
+                        <h3 class="panel-title" style="margin-bottom: 16px;"><i class="lucide-dollar-sign"></i> Registrar Venda Efetuada</h3>
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; align-items:flex-end;">
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label class="form-label" for="sale-product-select">Peça Vendida</label>
+                                <select id="sale-product-select" class="form-control form-select">
+                                    <option value="">-- Selecione o Produto --</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label class="form-label" for="sale-quantity">Quantidade</label>
+                                <input type="number" id="sale-quantity" class="form-control" value="1" min="1">
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label class="form-label" for="sale-price">Preço Venda Unitário (R$)</label>
+                                <input type="number" id="sale-price" class="form-control" step="0.01">
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label class="form-label" for="sale-date">Data da Venda</label>
+                                <input type="date" id="sale-date" class="form-control">
+                            </div>
+                            <button id="btn-register-sale" class="btn btn-success">
+                                <i class="lucide-check-circle"></i> Confirmar Venda
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tables: Inventory & Sales History -->
+                    <div class="dashboard-details">
+                        <!-- Left: Stock list -->
+                        <div class="panel-card">
+                            <h3 class="panel-title">Estoque & Peças Cadastradas</h3>
+                            <div class="table-container">
+                                <table class="custom-table" id="table-products">
+                                    <thead>
+                                        <tr>
+                                            <th>Nome do Item</th>
+                                            <th>Categoria</th>
+                                            <th>Filamento</th>
+                                            <th>Peso</th>
+                                            <th>Tempo A1</th>
+                                            <th>Preço Venda</th>
+                                            <th>Ação</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Dynamic list -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Right: Sales history -->
+                        <div class="panel-card">
+                            <h3 class="panel-title">Histórico Recente de Vendas</h3>
+                            <div class="table-container">
+                                <table class="custom-table" id="table-sales">
+                                    <thead>
+                                        <tr>
+                                            <th>Data</th>
+                                            <th>Produto</th>
+                                            <th style="text-align:center;">Qtd</th>
+                                            <th>Faturado</th>
+                                            <th>Lucro</th>
+                                            <th>Ação</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Dynamic list -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: CONFIGURAÇÕES -->
+                <div class="tab-pane" id="configuracoes">
+                    <div class="seo-workspace">
+                        <!-- Left: Firebase Setup -->
+                        <div class="panel-card">
+                            <h3 class="panel-title" style="margin-bottom: 16px;"><i class="lucide-cloud"></i> Configurar Banco de Dados Firebase</h3>
+                            <p class="text-muted" style="font-size:0.85rem; line-height:1.5; margin-bottom: 20px;">
+                                Por padrão, seus dados estão salvos no <strong>LocalStorage do Navegador (Offline)</strong>. Para compartilhar seus dados em tempo real e mantê-los seguros na nuvem, preencha os dados do seu banco do <strong>Firebase Firestore</strong> abaixo:
+                            </p>
+                            
+                            <form id="firebase-config-form">
+                                <div class="form-group">
+                                    <label class="form-label" for="fb-apikey">API Key</label>
+                                    <input type="text" id="fb-apikey" class="form-control" placeholder="Ex: AIzaSyA1...">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="fb-projectid">Project ID</label>
+                                    <input type="text" id="fb-projectid" class="form-control" placeholder="Ex: meu-app-impressao3d">
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label" for="fb-authdomain">Auth Domain</label>
+                                        <input type="text" id="fb-authdomain" class="form-control" placeholder="Ex: meu-app.firebaseapp.com">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="fb-storagebucket">Storage Bucket</label>
+                                        <input type="text" id="fb-storagebucket" class="form-control" placeholder="Ex: meu-app.appspot.com">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label" for="fb-messagingsenderid">Messaging Sender ID</label>
+                                        <input type="text" id="fb-messagingsenderid" class="form-control" placeholder="Ex: 852963147">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="fb-appid">App ID</label>
+                                        <input type="text" id="fb-appid" class="form-control" placeholder="Ex: 1:852963147:web:abc123xyz">
+                                    </div>
+                                </div>
+
+                                <div style="display:flex; gap: 12px; margin-top: 16px;">
+                                    <button type="submit" class="btn btn-primary" style="flex-grow:1;">
+                                        <i class="lucide-save"></i> Conectar Nuvem Firebase
+                                    </button>
+                                    <button type="button" id="btn-clear-firebase" class="btn btn-outline">
+                                        <i class="lucide-cloud-off"></i> Desconectar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Right: Business Goal settings -->
+                        <div class="panel-card" style="height: fit-content;">
+                            <h3 class="panel-title" style="margin-bottom: 16px;"><i class="lucide-target"></i> Parâmetros Comerciais</h3>
+                            
+                            <div class="form-group">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+                                    <label class="form-label" for="settings-goal-val" style="margin-bottom:0;">Meta de Faturamento Mensal (R$)</label>
+                                    <span id="goal-save-status" style="font-size:0.75rem; font-weight:600; color:var(--success); display:none; align-items:center; gap:4px;">
+                                        <i class="lucide-check-circle" style="font-size:0.8rem;"></i> Salvo automaticamente!
+                                    </span>
+                                </div>
+                                <input type="number" id="settings-goal-val" class="form-control" value="1500.00" step="100.00">
+                            </div>
+
+                            <div style="margin-top:24px; padding:16px; border:1px solid var(--card-border); border-radius: 8px; background-color: var(--background);">
+                                <h4 class="form-label" style="margin-bottom: 6px;">Dica do Consultor 🤖</h4>
+                                <p style="font-size:0.8rem; line-height:1.5; color:var(--text-muted);">
+                                    Uma meta de R$ 1.500,00 faturados por mês exige a venda de aproximadamente 20 vasos de tamanho médio ou 16 dragões articulados. Mantenha sua Bambu Lab A1 ativa imprimindo durante o dia e configure os maiores lotes de brinquedos para rodar durante a noite!
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Firebase Compat SDKs (loads globally as firebase) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <!-- Chart.js and Lucide Icons via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Application Scripts (Loaded sequentially to avoid module CORS) -->
+    <script src="js/mock-data.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/agent-consultant.js"></script>
+    <script src="js/agent-seo.js"></script>
+    <script src="js/agent-calculator.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
