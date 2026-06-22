@@ -265,6 +265,17 @@
                                 <input type="text" id="seo-base-name" class="form-control" placeholder="Ex: Dragao Articulado de Cristal">
                             </div>
 
+                            <div class="form-group">
+                                <label class="form-label" for="seo-image-upload">Foto do Produto (Análise Multimodal por IA)</label>
+                                <input type="file" id="seo-image-upload" class="form-control" accept="image/*" style="padding: 8px;">
+                                <div id="seo-image-preview-container" style="display: none; margin-top: 10px; position: relative;">
+                                    <img id="seo-image-preview" src="" alt="Preview" style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid var(--card-border); object-fit: cover;">
+                                    <button type="button" id="btn-remove-seo-image" class="btn btn-danger" style="position: absolute; top: 10px; right: 10px; padding: 4px 8px; font-size: 0.75rem;">
+                                        <i class="lucide-x"></i>
+                                    </button>
+                                </div>
+                            </div>
+
                             <div class="form-row">
                                 <div class="form-group">
                                     <label class="form-label" for="seo-material">Filamento Utilizado</label>
@@ -332,6 +343,12 @@
                                 </div>
                             </div>
 
+                            <!-- Visual Analysis Card -->
+                            <div class="seo-result-card" id="seo-analysis-card" style="display: none;">
+                                <h4 class="form-label" style="margin-bottom: 8px;"><i class="lucide-bot"></i> Análise Visual do Agente</h4>
+                                <p id="seo-points-analysis" style="font-size: 0.85rem; line-height: 1.5; color: var(--text-main);">...</p>
+                            </div>
+
                             <!-- Description Box -->
                             <div class="seo-result-card" style="display: flex; flex-direction: column; gap: 8px;">
                                 <div class="seo-result-header">
@@ -342,6 +359,40 @@
                                 </div>
                                 <div class="seo-description-preview" id="seo-desc">...</div>
                             </div>
+
+                            <!-- Video Script Card -->
+                            <div class="seo-result-card" style="display: flex; flex-direction: column; gap: 8px;">
+                                <div class="seo-result-header">
+                                    <span class="form-label"><i class="lucide-video"></i> Roteiro de Vídeo Curto (Reels/TikTok)</span>
+                                    <button id="btn-copy-script" class="btn btn-outline" style="padding: 4px 8px; font-size: 0.75rem;">
+                                        <i class="lucide-copy"></i> Copiar Roteiro
+                                    </button>
+                                </div>
+                                <div class="seo-description-preview" id="seo-script" style="background-color: var(--primary-light); border-color: var(--primary); line-height: 1.5;">...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- History & Memory Card -->
+                    <div class="panel-card" style="margin-top: 24px; width: 100%;">
+                        <h3 class="panel-title" style="margin-bottom: 12px;"><i class="lucide-brain"></i> Memória de Aprendizado do Agente</h3>
+                        <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 16px;">
+                            Visualize os últimos anúncios gerados e dê feedbacks para que o Agente aprenda o seu estilo de escrita nos próximos posts.
+                        </p>
+                        <div class="table-container" style="max-height: 300px; overflow-y: auto;">
+                            <table class="custom-table" id="table-seo-history">
+                                <thead>
+                                    <tr>
+                                        <th>Produto</th>
+                                        <th>Data</th>
+                                        <th>Títulos Gerados</th>
+                                        <th>Feedback do Usuário (Clique para Editar)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Dynamic list of history -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -678,6 +729,23 @@
                                 <p style="font-size:0.8rem; line-height:1.5; color:var(--text-muted);">
                                     Uma meta de R$ 1.500,00 faturados por mês exige a venda de aproximadamente 20 vasos de tamanho médio ou 16 dragões articulados. Mantenha sua Bambu Lab A1 ativa imprimindo durante o dia e configure os maiores lotes de brinquedos para rodar durante a noite!
                                 </p>
+                            </div>
+                        </div>
+
+                        <!-- Right: Gemini API settings -->
+                        <div class="panel-card" style="height: fit-content; margin-top: 24px;">
+                            <h3 class="panel-title" style="margin-bottom: 16px;"><i class="lucide-key"></i> Inteligência Artificial Gemini</h3>
+                            <p class="text-muted" style="font-size:0.85rem; line-height:1.5; margin-bottom: 16px;">
+                                Insira sua chave de API do Gemini para ativar a otimização inteligente de SEO por imagem.
+                            </p>
+                            <div class="form-group">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+                                    <label class="form-label" for="settings-gemini-key" style="margin-bottom:0;">Chave de API Gemini</label>
+                                    <span id="gemini-save-status" style="font-size:0.75rem; font-weight:600; color:var(--success); display:none; align-items:center; gap:4px;">
+                                        <i class="lucide-check-circle" style="font-size:0.8rem;"></i> Salvo!
+                                    </span>
+                                </div>
+                                <input type="password" id="settings-gemini-key" class="form-control" placeholder="AIzaSy...">
                             </div>
                         </div>
                     </div>

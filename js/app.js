@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupThemeToggle();
     setupFirebaseSettings();
     setupGoalSettings();
+    setupGeminiSettings();
 
     // 4. Setup Agent Tabs Logic
     initConsultantTab();
@@ -77,6 +78,7 @@ function setupFirebaseAuthState() {
         if (loginScreen) loginScreen.style.display = 'none';
         reloadData().then(() => {
             updateDashboard();
+            renderSeoHistoryTable();
         });
         return;
     }
@@ -107,6 +109,15 @@ function setupFirebaseAuthState() {
             // Pre-fill goal value in settings
             const goalInput = document.getElementById('settings-goal-val');
             if (goalInput) goalInput.value = monthlyGoal.toFixed(2);
+
+            // Pre-fill Gemini key and render SEO history
+            const geminiInput = document.getElementById('settings-gemini-key');
+            if (geminiInput) {
+                window.db.getGeminiKey().then(key => {
+                    geminiInput.value = key;
+                });
+            }
+            renderSeoHistoryTable();
             
         } else {
             console.log("Nenhum usuário conectado.");
@@ -513,9 +524,45 @@ function goToSeoTab(productData) {
 // ----------------------------------------------------
 function initSeoTab() {
     const btnGenerate = document.getElementById('btn-generate-seo');
+    const imgInput = document.getElementById('seo-image-upload');
+    const imgPreviewContainer = document.getElementById('seo-image-preview-container');
+    const imgPreview = document.getElementById('seo-image-preview');
+    const btnRemoveImg = document.getElementById('btn-remove-seo-image');
+    let selectedImageData = null;
+
     if (!btnGenerate) return;
 
-    btnGenerate.addEventListener('click', () => {
+    // Handle Image file input and base64 parsing
+    if (imgInput) {
+        imgInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const base64String = event.target.result.split(',')[1];
+                selectedImageData = {
+                    mimeType: file.type,
+                    data: base64String
+                };
+                if (imgPreview) imgPreview.src = event.target.result;
+                if (imgPreviewContainer) imgPreviewContainer.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Handle Remove image button
+    if (btnRemoveImg) {
+        btnRemoveImg.addEventListener('click', () => {
+            selectedImageData = null;
+            if (imgInput) imgInput.value = '';
+            if (imgPreviewContainer) imgPreviewContainer.style.display = 'none';
+            if (imgPreview) imgPreview.src = '';
+        });
+    }
+
+    btnGenerate.addEventListener('click', async () => {
         const baseName = document.getElementById('seo-base-name').value.trim();
         const material = document.getElementById('seo-material').value;
         const color = document.getElementById('seo-color').value.trim();
@@ -527,39 +574,151 @@ function initSeoTab() {
             return;
         }
 
-        // Call SEO calculations
-        const titles = window.seoAgent.generateTitles(baseName, material, color, highlights);
-        const description = window.seoAgent.generateDescription(baseName, material, color, highlights, extraInfo);
-        const details = window.seoAgent.suggestCategories(baseName);
+        const geminiApiKey = await window.db.getGeminiKey();
+        const originalText = btnGenerate.innerHTML;
+        btnGenerate.disabled = true;
+        btnGenerate.innerHTML = '<i class="lucide-refresh-cw animate-spin" style="margin-right:5px;"></i> Otimizando com IA...';
 
-        // Update UI Results
-        document.getElementById('seo-ml-title').textContent = titles.mercadoLivre;
-        document.getElementById('seo-ml-count').textContent = `${titles.mercadoLivre.length}/60 carac.`;
-        
-        document.getElementById('seo-shopee-title').textContent = titles.shopee;
-        document.getElementById('seo-shopee-count').textContent = `${titles.shopee.length}/60 carac.`;
+        try {
+            if (geminiApiKey) {
+                // Get SEO history context for context memory
+                const fullHistory = await window.db.getSeoHistory();
+                const historyContext = fullHistory.slice(0, 5).map(h => ({
+                    baseName: h.baseName,
+                    material: h.material,
+                    finish: h.finish,
+                    mercadoLivreTitle: h.mercadoLivreTitle,
+                    shopeeTitle: h.shopeeTitle,
+                    feedback: h.feedback
+                }));
 
-        document.getElementById('seo-desc').textContent = description;
-        document.getElementById('seo-ml-cat').textContent = details.mercadoLivre;
-        document.getElementById('seo-shopee-cat').textContent = details.shopee;
+                // Call Gemini API
+                const aiResults = await window.seoAgent.generateSeoWithAi({
+                    baseName,
+                    material,
+                    finish: color,
+                    highlights,
+                    extraInfo,
+                    imageData: selectedImageData,
+                    historyContext,
+                    apiKey: geminiApiKey
+                });
 
-        // Render Tags
-        const tagsContainer = document.getElementById('seo-tags-container');
-        tagsContainer.innerHTML = '';
-        details.tags.forEach(t => {
-            const span = document.createElement('span');
-            span.className = 'tag-item';
-            span.textContent = `#${t}`;
-            tagsContainer.appendChild(span);
-        });
+                // Populate UI
+                document.getElementById('seo-ml-title').textContent = aiResults.mercadoLivreTitle || '';
+                document.getElementById('seo-ml-count').textContent = `${(aiResults.mercadoLivreTitle || '').length}/60 carac.`;
+                
+                document.getElementById('seo-shopee-title').textContent = aiResults.shopeeTitle || '';
+                document.getElementById('seo-shopee-count').textContent = `${(aiResults.shopeeTitle || '').length}/60 carac.`;
 
-        // Show result box
-        document.getElementById('seo-results-wrapper').style.display = 'block';
+                document.getElementById('seo-desc').textContent = aiResults.description || '';
+                document.getElementById('seo-ml-cat').textContent = aiResults.mercadoLivreCategory || '';
+                document.getElementById('seo-shopee-cat').textContent = aiResults.shopeeCategory || '';
+                document.getElementById('seo-script').textContent = aiResults.videoScript || '';
 
-        // Setup Copy buttons
-        setupCopyButton('btn-copy-ml-title', titles.mercadoLivre);
-        setupCopyButton('btn-copy-shopee-title', titles.shopee);
-        setupCopyButton('btn-copy-desc', description);
+                // Visual Analysis
+                const analysisCard = document.getElementById('seo-analysis-card');
+                const analysisText = document.getElementById('seo-points-analysis');
+                if (analysisCard && analysisText) {
+                    if (aiResults.pointsAnalysis) {
+                        analysisText.textContent = aiResults.pointsAnalysis;
+                        analysisCard.style.display = 'block';
+                    } else {
+                        analysisCard.style.display = 'none';
+                    }
+                }
+
+                // Render Tags
+                const tagsContainer = document.getElementById('seo-tags-container');
+                tagsContainer.innerHTML = '';
+                (aiResults.tags || []).forEach(t => {
+                    const span = document.createElement('span');
+                    span.className = 'tag-item';
+                    span.textContent = `#${t}`;
+                    tagsContainer.appendChild(span);
+                });
+
+                // Save to SEO history
+                const newHistoryEntry = {
+                    baseName,
+                    material,
+                    finish: color,
+                    mercadoLivreTitle: aiResults.mercadoLivreTitle,
+                    shopeeTitle: aiResults.shopeeTitle,
+                    feedback: ''
+                };
+                await window.db.saveSeoHistoryEntry(newHistoryEntry);
+                await renderSeoHistoryTable();
+
+                // Setup Copy buttons
+                setupCopyButton('btn-copy-ml-title', aiResults.mercadoLivreTitle);
+                setupCopyButton('btn-copy-shopee-title', aiResults.shopeeTitle);
+                setupCopyButton('btn-copy-desc', aiResults.description);
+                setupCopyButton('btn-copy-script', aiResults.videoScript);
+
+            } else {
+                // Fallback to local heuristic calculations
+                alert("Nenhuma chave Gemini configurada. Executando otimização simplificada local. Preencha a chave nas Configurações para ativar análise por imagem e roteiros!");
+
+                const titles = window.seoAgent.generateTitles(baseName, material, color, highlights);
+                const description = window.seoAgent.generateDescription(baseName, material, color, highlights, extraInfo);
+                const details = window.seoAgent.suggestCategories(baseName);
+
+                // Update UI Results
+                document.getElementById('seo-ml-title').textContent = titles.mercadoLivre;
+                document.getElementById('seo-ml-count').textContent = `${titles.mercadoLivre.length}/60 carac.`;
+                
+                document.getElementById('seo-shopee-title').textContent = titles.shopee;
+                document.getElementById('seo-shopee-count').textContent = `${titles.shopee.length}/60 carac.`;
+
+                document.getElementById('seo-desc').textContent = description;
+                document.getElementById('seo-ml-cat').textContent = details.mercadoLivre;
+                document.getElementById('seo-shopee-cat').textContent = details.shopee;
+                document.getElementById('seo-script').textContent = "Configure a API do Gemini nas Configurações para gerar roteiros de vídeos de venda por Inteligência Artificial!";
+
+                const analysisCard = document.getElementById('seo-analysis-card');
+                if (analysisCard) analysisCard.style.display = 'none';
+
+                // Render Tags
+                const tagsContainer = document.getElementById('seo-tags-container');
+                tagsContainer.innerHTML = '';
+                details.tags.forEach(t => {
+                    const span = document.createElement('span');
+                    span.className = 'tag-item';
+                    span.textContent = `#${t}`;
+                    tagsContainer.appendChild(span);
+                });
+
+                // Save to SEO history
+                const newHistoryEntry = {
+                    baseName,
+                    material,
+                    finish: color,
+                    mercadoLivreTitle: titles.mercadoLivre,
+                    shopeeTitle: titles.shopee,
+                    feedback: '[Geração Local]'
+                };
+                await window.db.saveSeoHistoryEntry(newHistoryEntry);
+                await renderSeoHistoryTable();
+
+                // Setup Copy buttons
+                setupCopyButton('btn-copy-ml-title', titles.mercadoLivre);
+                setupCopyButton('btn-copy-shopee-title', titles.shopee);
+                setupCopyButton('btn-copy-desc', description);
+                setupCopyButton('btn-copy-script', "Nenhum roteiro gerado localmente.");
+            }
+
+            // Show result box
+            document.getElementById('seo-results-wrapper').style.display = 'block';
+
+        } catch (err) {
+            console.error("Erro na geração de SEO:", err);
+            alert(`Falha ao gerar SEO: ${err.message}`);
+        } finally {
+            btnGenerate.disabled = false;
+            btnGenerate.innerHTML = originalText;
+            if (window.lucide) window.lucide.createIcons();
+        }
     });
 }
 
@@ -1066,4 +1225,94 @@ function parseCurrencyBRL(text) {
     // Remove R$, remove spaces, remove dots (thousand separator) and replace comma with dot
     const clean = text.replace(/R\$\s?/g, '').replace(/\./g, '').replace(',', '.').trim();
     return parseFloat(clean) || 0;
+}
+
+// Gemini API settings auto-save logic
+function setupGeminiSettings() {
+    const geminiInput = document.getElementById('settings-gemini-key');
+    const statusEl = document.getElementById('gemini-save-status');
+    let geminiSaveTimeout = null;
+
+    if (geminiInput) {
+        // Pre-fill
+        window.db.getGeminiKey().then(key => {
+            geminiInput.value = key;
+        });
+
+        // Auto-save on input (debounced)
+        geminiInput.addEventListener('input', () => {
+            if (!statusEl) return;
+
+            statusEl.style.display = 'inline-flex';
+            statusEl.style.color = 'var(--warning)';
+            statusEl.innerHTML = '<i class="lucide-refresh-cw animate-spin" style="font-size:0.8rem; margin-right:3px;"></i> Salvando...';
+            if (window.lucide) window.lucide.createIcons();
+
+            clearTimeout(geminiSaveTimeout);
+            geminiSaveTimeout = setTimeout(async () => {
+                const val = geminiInput.value.trim();
+                await window.db.setGeminiKey(val);
+
+                // Show "Salvo!"
+                statusEl.style.color = 'var(--success)';
+                statusEl.innerHTML = '<i class="lucide-check-circle" style="font-size:0.8rem; margin-right:3px;"></i> Salvo!';
+                if (window.lucide) window.lucide.createIcons();
+
+                setTimeout(() => {
+                    statusEl.style.display = 'none';
+                }, 2000);
+            }, 800);
+        });
+    }
+}
+
+// Render SEO history table and bind feedback saves
+async function renderSeoHistoryTable() {
+    const historyTableBody = document.querySelector('#table-seo-history tbody');
+    if (!historyTableBody) return;
+
+    const history = await window.db.getSeoHistory();
+    historyTableBody.innerHTML = '';
+
+    if (history.length === 0) {
+        historyTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-muted); font-size:0.85rem; padding:16px;">Nenhum anúncio gerado anteriormente.</td></tr>';
+        return;
+    }
+
+    history.forEach(item => {
+        const tr = document.createElement('tr');
+        const date = new Date(item.timestamp).toLocaleDateString('pt-BR', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+        
+        tr.innerHTML = `
+            <td><strong>${item.baseName}</strong><br><small class="text-muted">${item.material} / ${item.finish || 'N/A'}</small></td>
+            <td>${date}</td>
+            <td>
+                <div style="font-size:0.8rem;">
+                    <strong>ML:</strong> ${item.mercadoLivreTitle || ''}<br>
+                    <strong>Shopee:</strong> ${item.shopeeTitle || ''}
+                </div>
+            </td>
+            <td>
+                <textarea class="form-control seo-feedback-input" data-id="${item.id}" rows="2" style="font-size:0.8rem; width:100%;" placeholder="Feedback/críticas...">${item.feedback || ''}</textarea>
+            </td>
+        `;
+
+        // Save feedback on blur
+        const feedbackTextarea = tr.querySelector('.seo-feedback-input');
+        feedbackTextarea.addEventListener('blur', async () => {
+            const val = feedbackTextarea.value.trim();
+            await window.db.updateSeoHistoryFeedback(item.id, val);
+            console.log(`Feedback atualizado para o post ${item.id}`);
+        });
+
+        historyTableBody.appendChild(tr);
+    });
+
+    if (window.lucide) window.lucide.createIcons();
 }

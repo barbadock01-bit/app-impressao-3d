@@ -250,5 +250,92 @@ window.db = {
         
         localStorage.setItem('3d_goal', value.toString());
         return value;
+    },
+
+    // --- SEO HISTORY API ---
+    async getSeoHistory() {
+        if (dbType === 'firebase' && firestoreDb && currentUserId) {
+            try {
+                const querySnapshot = await firestoreDb.collection('users').doc(currentUserId).collection('seo_history').get();
+                const history = [];
+                querySnapshot.forEach((doc) => {
+                    history.push({ ...doc.data(), id: doc.id });
+                });
+                history.sort((a, b) => b.timestamp - a.timestamp);
+                return history;
+            } catch (e) {
+                console.error("Erro ao obter histórico de SEO do Firebase", e);
+            }
+        }
+        const history = JSON.parse(localStorage.getItem('3d_seo_history') || '[]');
+        history.sort((a, b) => b.timestamp - a.timestamp);
+        return history;
+    },
+
+    async saveSeoHistoryEntry(entry) {
+        if (!entry.id) {
+            entry.id = 'seo-' + Date.now();
+        }
+        if (!entry.timestamp) {
+            entry.timestamp = Date.now();
+        }
+        if (dbType === 'firebase' && firestoreDb && currentUserId) {
+            try {
+                await firestoreDb.collection('users').doc(currentUserId).collection('seo_history').doc(entry.id).set(entry);
+                return entry;
+            } catch (e) {
+                console.error("Erro ao salvar entrada de SEO no Firebase", e);
+            }
+        }
+        const history = JSON.parse(localStorage.getItem('3d_seo_history') || '[]');
+        history.push(entry);
+        localStorage.setItem('3d_seo_history', JSON.stringify(history));
+        return entry;
+    },
+
+    async updateSeoHistoryFeedback(id, feedback) {
+        if (dbType === 'firebase' && firestoreDb && currentUserId) {
+            try {
+                await firestoreDb.collection('users').doc(currentUserId).collection('seo_history').doc(id).update({ feedback: feedback });
+                return true;
+            } catch (e) {
+                console.error("Erro ao atualizar feedback de SEO no Firebase", e);
+            }
+        }
+        const history = JSON.parse(localStorage.getItem('3d_seo_history') || '[]');
+        const index = history.findIndex(e => e.id === id);
+        if (index !== -1) {
+            history[index].feedback = feedback;
+            localStorage.setItem('3d_seo_history', JSON.stringify(history));
+            return true;
+        }
+        return false;
+    },
+
+    async getGeminiKey() {
+        if (dbType === 'firebase' && firestoreDb && currentUserId) {
+            try {
+                const docSnap = await firestoreDb.collection('users').doc(currentUserId).collection('settings').doc('gemini_key').get();
+                if (docSnap.exists) {
+                    return docSnap.data().value || '';
+                }
+            } catch (e) {
+                console.error("Erro ao obter chave do Gemini do Firebase", e);
+            }
+        }
+        return localStorage.getItem('3d_gemini_key') || '';
+    },
+
+    async setGeminiKey(key) {
+        if (dbType === 'firebase' && firestoreDb && currentUserId) {
+            try {
+                await firestoreDb.collection('users').doc(currentUserId).collection('settings').doc('gemini_key').set({ value: key });
+                return key;
+            } catch (e) {
+                console.error("Erro ao salvar chave do Gemini no Firebase", e);
+            }
+        }
+        localStorage.setItem('3d_gemini_key', key);
+        return key;
     }
 };
