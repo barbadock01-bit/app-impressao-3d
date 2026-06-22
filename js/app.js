@@ -42,15 +42,22 @@ async function reloadData() {
 
 function updateDbStatusUI(status) {
     const statusEl = document.getElementById('db-status-badge');
-    if (!statusEl) return;
+    const statusMobileEl = document.querySelector('.db-status-mobile');
     
-    if (status === 'firebase') {
-        statusEl.className = 'db-status firebase';
-        statusEl.innerHTML = '<i class="lucide-cloud"></i> Firebase Nuvem';
-    } else {
-        statusEl.className = 'db-status local';
-        statusEl.innerHTML = '<i class="lucide-database"></i> LocalStorage (Offline)';
-    }
+    const updateEl = (el, isMobile) => {
+        if (!el) return;
+        if (status === 'firebase') {
+            el.className = 'db-status firebase' + (isMobile ? ' db-status-mobile' : '');
+            el.innerHTML = '<i class="lucide-cloud"></i> Firebase Nuvem';
+        } else {
+            el.className = 'db-status local' + (isMobile ? ' db-status-mobile' : '');
+            el.innerHTML = '<i class="lucide-database"></i> LocalStorage (Offline)';
+        }
+    };
+
+    updateEl(statusEl, false);
+    updateEl(statusMobileEl, true);
+
     if (window.lucide) window.lucide.createIcons();
 }
 
@@ -731,14 +738,14 @@ async function handleSaveCalculatedProduct() {
     const timeM = parseInt(document.getElementById('calc-time-m').value) || 0;
     const printTime = timeH + (timeM / 60);
 
-    const filamentCost = parseFloat(document.getElementById('cost-breakdown-filament').textContent.replace('R$', '').replace(',', '.').trim());
-    const energyCost = parseFloat(document.getElementById('cost-breakdown-energy').textContent.replace('R$', '').replace(',', '.').trim());
-    const depreciationCost = parseFloat(document.getElementById('cost-breakdown-depreciation').textContent.replace('R$', '').replace(',', '.').trim());
-    const extrasCost = parseFloat(document.getElementById('cost-breakdown-extras').textContent.replace('R$', '').replace(',', '.').trim());
-    const totalCost = parseFloat(document.getElementById('cost-breakdown-total').textContent.replace('R$', '').replace(',', '.').trim());
+    const filamentCost = parseCurrencyBRL(document.getElementById('cost-breakdown-filament').textContent);
+    const energyCost = parseCurrencyBRL(document.getElementById('cost-breakdown-energy').textContent);
+    const depreciationCost = parseCurrencyBRL(document.getElementById('cost-breakdown-depreciation').textContent);
+    const extrasCost = parseCurrencyBRL(document.getElementById('cost-breakdown-extras').textContent);
+    const totalCost = parseCurrencyBRL(document.getElementById('cost-breakdown-total').textContent);
 
-    const sellingPrice = parseFloat(document.getElementById('calc-selling-price-out').textContent.replace('R$', '').replace(',', '.').trim());
-    const profit = parseFloat(document.getElementById('calc-profit-out').textContent.replace('R$', '').replace(',', '.').trim());
+    const sellingPrice = parseCurrencyBRL(document.getElementById('calc-selling-price-out').textContent);
+    const profit = parseCurrencyBRL(document.getElementById('calc-profit-out').textContent);
     
     const margin = parseInt(document.getElementById('calc-margin-slider').value) || 50;
 
@@ -1052,4 +1059,11 @@ function formatHours(hoursDec) {
     if (h === 0) return `${m}min`;
     if (m === 0) return `${h}h`;
     return `${h}h ${m}min`;
+}
+
+function parseCurrencyBRL(text) {
+    if (!text) return 0;
+    // Remove R$, remove spaces, remove dots (thousand separator) and replace comma with dot
+    const clean = text.replace(/R\$\s?/g, '').replace(/\./g, '').replace(',', '.').trim();
+    return parseFloat(clean) || 0;
 }

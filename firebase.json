@@ -10,6 +10,8 @@
       "**/.*",
       "**/node_modules/**",
       "firebase.exe",
+      "firebase-tools-instant-win.exe",
+      "service-account.json",
       "firestore.rules",
       "firestore.indexes.json"
     ],

@@ -1063,8 +1063,8 @@ body {
 }
 
 @media (min-width: 769px) {
-    .mobile-nav {
-        display: none;
+    .mobile-nav, .db-status-mobile {
+        display: none !important;
     }
 }
 

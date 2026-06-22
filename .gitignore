@@ -5,3 +5,5 @@ firebase.exe
 walkthrough.md
 task.md
 implementation_plan.md
+preload.js
+service-account.json
